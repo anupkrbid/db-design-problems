@@ -33,22 +33,31 @@ WHERE
 
 
 SELECT 
-    *
+    l.id, l.title, l.location_city, l.location_country
 FROM
-    listings
+    listings AS l
 WHERE
     location_city = 'New York';
 
 -- List all properties sorted by price (ascending and descending).
 SELECT 
-    *
+    l.id,
+    l.title,
+    l.location_city,
+    l.location_country,
+    l.price_per_night
 FROM
-    listings
+    listings AS l
 ORDER BY price_per_night ASC;
+
 SELECT 
-    *
+    l.id,
+    l.title,
+    l.location_city,
+    l.location_country,
+    l.price_per_night
 FROM
-    listings
+    listings AS l
 ORDER BY price_per_night DESC;
 
 -- Get bookings for a particular user.
@@ -57,7 +66,7 @@ SELECT
 FROM
     bookings AS b
 WHERE
-    b.guest_id = 2;
+    b.guest_id = 1;
 
 -- Find properties within a specific price range.
 SELECT 
@@ -72,11 +81,13 @@ WHERE
 -- Aggregations and Grouping
 
 
+-- Count total listings per city.
 SELECT 
     location_city, COUNT(*) AS listing_count
 FROM
     listings
-GROUP BY location_city;
+GROUP BY location_city
+ORDER BY listing_count DESC;
 
 -- Find the average rating of each listing.
 SELECT 
