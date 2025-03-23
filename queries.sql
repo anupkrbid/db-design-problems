@@ -221,12 +221,16 @@ ORDER BY avg_rating DESC, total_reviews DESC
 LIMIT 3;
 
 -- List the most active guests (users who made the most bookings).
+WITH booking_count_list AS (
+	SELECT 
+		u.id, u.full_name, COUNT(b.id) AS booking_count
+	FROM
+		users AS u
+			JOIN
+		bookings AS b ON u.id = b.guest_id
+	GROUP BY u.id, u.full_name
+)
 SELECT 
-    u.id, u.full_name, COUNT(b.id) AS booking_count
+    *
 FROM
-    users AS u
-        JOIN
-    bookings AS b ON u.id = b.guest_id
-GROUP BY u.id
-ORDER BY booking_count DESC
-LIMIT 1;
+    booking_count_list WHERE booking_count = (SELECT MAX(booking_count) FROM booking_count_list);
