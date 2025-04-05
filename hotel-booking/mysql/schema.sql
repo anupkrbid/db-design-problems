@@ -1,0 +1,118 @@
+-- ENUM types are declared inline in MySQL, no need for CREATE TYPE
+
+-- Create the users table
+CREATE TABLE IF NOT EXISTS users (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    type ENUM('GUEST', 'OWNER') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Create countries
+CREATE TABLE IF NOT EXISTS countries (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    code VARCHAR(10) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Create cities
+CREATE TABLE IF NOT EXISTS cities (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    country_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (country_id) REFERENCES countries(id)
+);
+
+-- Create hotels
+CREATE TABLE IF NOT EXISTS hotels (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    city_id INT NOT NULL,
+    owner_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (city_id) REFERENCES cities(id),
+    FOREIGN KEY (owner_id) REFERENCES users(id)
+);
+
+-- Create room_types
+CREATE TABLE IF NOT EXISTS room_types (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    type VARCHAR(50) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    hotel_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (hotel_id) REFERENCES hotels(id)
+);
+
+-- Create bookings
+CREATE TABLE IF NOT EXISTS bookings (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    check_in_date DATE NOT NULL,
+    check_out_date DATE NOT NULL,
+    status ENUM('BOOKED', 'CANCELLED', 'COMPLETED') NOT NULL DEFAULT 'BOOKED',
+    payment_id INT,
+    user_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (payment_id) REFERENCES payments(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- Create payments
+CREATE TABLE IF NOT EXISTS payments (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    amount DECIMAL(10,2) NOT NULL,
+    payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    booking_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (booking_id) REFERENCES bookings(id)
+);
+
+-- Create reviews
+CREATE TABLE IF NOT EXISTS reviews (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT,
+    user_id BIGINT NOT NULL,
+    booking_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (booking_id) REFERENCES bookings(id)
+);
+
+-- Create available_rooms
+CREATE TABLE IF NOT EXISTS available_rooms (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    room_type_id INT NOT NULL,
+    date DATE NOT NULL,
+    booking_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (room_type_id) REFERENCES room_types(id),
+    FOREIGN KEY (booking_id) REFERENCES bookings(id)
+);
+
+-- Index on date
+CREATE INDEX idx_available_rooms_date ON available_rooms(date);
+
+-- Create favourites (fixed typo from 'IF NOT EXIST')
+CREATE TABLE IF NOT EXISTS favourites (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    hotel_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (hotel_id) REFERENCES hotels(id)
+);
