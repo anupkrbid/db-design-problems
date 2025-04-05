@@ -84,6 +84,7 @@ CREATE TABLE IF NOT EXISTS bookings (
     id SERIAL PRIMARY KEY,
     check_in_date DATE NOT NULL,
     check_out_date DATE NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
     status booking_status NOT NULL DEFAULT 'BOOKED',
     payment_id INT REFERENCES payments(id),
     user_id INT REFERENCES users(id) NOT NULL,
@@ -113,7 +114,8 @@ CREATE TABLE IF NOT EXISTS reviews (
 CREATE TABLE IF NOT EXISTS available_rooms (
     id BIGSERIAL PRIMARY KEY,
     room_type_id INT REFERENCES room_types(id) NOT NULL,
-    date DATE NOT NULL ,
+    date DATE NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
     booking_id INT REFERENCES bookings(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
